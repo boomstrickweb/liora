@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Liora AI Studio</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Logo -->
+    <img src="https://image2url.com/images/1759051267245-53623030-e1d9-425c-bcde-259b0564ff18.png" alt="Liora Logo" class="logo">
+
+    <!-- Title -->
+    <h1 class="title">Liora AI Studio</h1>
+    <p class="subtitle">Deep Search & Intelligent Search</p>
+
+    <!-- Toggle Switch -->
+    <div class="toggle-container">
+      <label class="switch">
+        <input type="checkbox" id="modeToggle">
+        <span class="slider"></span>
+      </label>
+      <span id="modeLabel">Search</span>
+    </div>
+
+    <!-- Query Box -->
+    <div class="query-box">
+      <input type="text" id="question" placeholder="Enter your query...">
+      <button id="searchBtn">Search</button>
+    </div>
+
+    <div id="status" class="status"></div>
+    <div id="timer" class="timer"></div>
+    <div id="result" class="result"></div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
