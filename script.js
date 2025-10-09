@@ -1,62 +1,99 @@
-const questionInput = document.getElementById("question");
-const searchBtn = document.getElementById("searchBtn");
-const modeToggle = document.getElementById("modeToggle");
-const modeLabel = document.getElementById("modeLabel");
-const statusEl = document.getElementById("status");
-const timerEl = document.getElementById("timer");
-const resultEl = document.getElementById("result");
+// Menu Navigation
+const menuBtns = document.querySelectorAll(".menu-btn");
+const sections = document.querySelectorAll("section");
 
-let timerInterval;
-
-const API_DEEP = "https://cloud.flowiseai.com/api/v1/prediction/2fd060a7-3ea7-482c-8eea-4f1a1168cef1";
-const API_SEARCH = "https://cloud.flowiseai.com/api/v1/prediction/f495e9f3-cd33-428d-93ac-9c7914b5c052";
-
-async function queryAPI(url, payload) {
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
+menuBtns.forEach(btn => {
+  btn.addEventListener("click", () => {
+    const target = btn.getAttribute("data-section");
+    sections.forEach(sec => sec.classList.remove("active"));
+    document.getElementById(target).classList.add("active");
+    menuBtns.forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
   });
-  return await res.json();
-}
-
-function startTimer() {
-  let seconds = 0;
-  timerEl.textContent = `⏱️ 0s`;
-  timerInterval = setInterval(() => {
-    seconds++;
-    timerEl.textContent = `⏱️ ${seconds}s`;
-  }, 1000);
-}
-
-function stopTimer() {
-  clearInterval(timerInterval);
-}
-
-searchBtn.addEventListener("click", async () => {
-  const question = questionInput.value.trim();
-  if (!question) return alert("Enter a query!");
-
-  resultEl.textContent = "";
-  statusEl.textContent = "🔎 Searching...";
-  startTimer();
-
-  const mode = modeToggle.checked ? "deep" : "search";
-  const url = mode === "search" ? API_SEARCH : API_DEEP;
-  const payload = mode === "search" ? { question } : { question };
-
-  try {
-    const res = await queryAPI(url, payload);
-    stopTimer();
-    statusEl.textContent = "✅ Completed";
-    resultEl.textContent = res.text || JSON.stringify(res, null, 2);
-  } catch (err) {
-    stopTimer();
-    statusEl.textContent = "❌ Error";
-    resultEl.textContent = err.message;
-  }
 });
 
-modeToggle.addEventListener("change", () => {
-  modeLabel.textContent = modeToggle.checked ? "Deep Search" : "Search";
+// Timer
+function startTimer(statusEl) {
+  let time = 0;
+  statusEl.textContent = "Processing...";
+  const interval = setInterval(() => {
+    time++;
+    statusEl.textContent = `Processing... ${time}s`;
+  }, 1000);
+  return interval;
+}
+
+// API Calls
+async function querySearch(data) {
+  const response = await fetch(
+    "https://cloud.flowiseai.com/api/v1/prediction/f495e9f3-cd33-428d-93ac-9c7914b5c052",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    }
+  );
+  return response.json();
+}
+
+async function queryDeep(data) {
+  const response = await fetch(
+    "https://cloud.flowiseai.com/api/v1/prediction/2fd060a7-3ea7-482c-8eea-4f1a1168cef1",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    }
+  );
+  return response.json();
+}
+
+async function queryChat(data) {
+  const response = await fetch(
+    "https://cloud.flowiseai.com/api/v1/prediction/ef218325-4fa0-4bef-9f1d-11f7278341f3",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    }
+  );
+  return response.json();
+}
+
+// Research Run
+document.getElementById("researchBtn").addEventListener("click", async () => {
+  const query = document.getElementById("researchInput").value;
+  const status = document.getElementById("researchStatus");
+  const resultBox = document.getElementById("researchResult");
+  const isDeep = document.getElementById("modeToggle").checked;
+
+  const interval = startTimer(status);
+  const res = isDeep ? await queryDeep({ question: query }) : await querySearch({ question: query });
+  clearInterval(interval);
+
+  status.textContent = "Done ✅";
+  resultBox.textContent = res.text || JSON.stringify(res);
+});
+
+// Chat
+const chatWindow = document.getElementById("chatWindow");
+const chatInput = document.getElementById("chatInput");
+const chatBtn = document.getElementById("chatBtn");
+
+function addMessage(message, sender) {
+  const bubble = document.createElement("div");
+  bubble.className = `chat-bubble ${sender}`;
+  bubble.textContent = message;
+  chatWindow.appendChild(bubble);
+  chatWindow.scrollTop = chatWindow.scrollHeight;
+}
+
+chatBtn.addEventListener("click", async () => {
+  const msg = chatInput.value;
+  if (!msg) return;
+  addMessage(msg, "user");
+  chatInput.value = "";
+
+  const res = await queryChat({ question: msg });
+  addMessage(res.text || JSON.stringify(res), "ai");
 });
