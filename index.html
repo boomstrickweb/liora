@@ -7,32 +7,47 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
-    <!-- Logo -->
-    <img src="https://image2url.com/images/1759051267245-53623030-e1d9-425c-bcde-259b0564ff18.png" alt="Liora Logo" class="logo">
+  <div class="app-container">
+    <!-- Header -->
+    <header>
+      <img src="https://image2url.com/images/1759051267245-53623030-e1d9-425c-bcde-259b0564ff18.png" alt="Liora Logo" class="logo">
+      <h1>Liora AI Studio</h1>
+    </header>
 
-    <!-- Title -->
-    <h1 class="title">Liora AI Studio</h1>
-    <p class="subtitle">Deep Search & Intelligent Search</p>
+    <!-- Navigation -->
+    <nav class="menu">
+      <button class="menu-btn" data-section="search-deep">Search / Deep Search</button>
+      <button class="menu-btn" data-section="chat">AI Chat</button>
+    </nav>
 
-    <!-- Toggle Switch -->
-    <div class="toggle-container">
-      <label class="switch">
-        <input type="checkbox" id="modeToggle">
-        <span class="slider"></span>
-      </label>
-      <span id="modeLabel">Search</span>
-    </div>
+    <!-- Sections -->
+    <main>
+      <!-- Search + Deep Search (Toggle) -->
+      <section id="search-deep" class="active">
+        <h2>Research Assistant</h2>
+        <label class="toggle">
+          <input type="checkbox" id="modeToggle">
+          <span class="slider"></span>
+          <span class="labels" data-off="Search" data-on="Deep Search"></span>
+        </label>
+        <div class="input-group">
+          <input type="text" id="researchInput" placeholder="Enter your query...">
+          <button id="researchBtn">Run</button>
+        </div>
+        <div id="researchStatus"></div>
+        <div id="researchResult" class="result-box"></div>
+      </section>
 
-    <!-- Query Box -->
-    <div class="query-box">
-      <input type="text" id="question" placeholder="Enter your query...">
-      <button id="searchBtn">Search</button>
-    </div>
-
-    <div id="status" class="status"></div>
-    <div id="timer" class="timer"></div>
-    <div id="result" class="result"></div>
+      <!-- AI Chat -->
+      <section id="chat">
+        <h2>AI Chat</h2>
+        <div id="chatWindow" class="chat-window"></div>
+        <div class="chat-input">
+          <input type="text" id="chatInput" placeholder="Type your message...">
+          <button id="chatBtn">Send</button>
+        </div>
+      </section>
+    </main>
   </div>
 
   <script src="script.js"></script>
