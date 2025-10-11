@@ -1,99 +1,111 @@
-// Menu Navigation
-const menuBtns = document.querySelectorAll(".menu-btn");
-const sections = document.querySelectorAll("section");
+// MODE + ENDPOINTS
+const modes = [
+  { id: 'search', label: 'Search', url: 'https://cloud.flowiseai.com/api/v1/prediction/f495e9f3-cd33-428d-93ac-9c7914b5c052' },
+  { id: 'deep',   label: 'Deep Search', url: 'https://cloud.flowiseai.com/api/v1/prediction/2fd060a7-3ea7-482c-8eea-4f1a1168cef1' },
+  { id: 'chat',   label: 'AI Chat', url: 'https://cloud.flowiseai.com/api/v1/prediction/ef218325-4fa0-4bef-9f1d-11f7278341f3' }
+];
 
-menuBtns.forEach(btn => {
-  btn.addEventListener("click", () => {
-    const target = btn.getAttribute("data-section");
-    sections.forEach(sec => sec.classList.remove("active"));
-    document.getElementById(target).classList.add("active");
-    menuBtns.forEach(b => b.classList.remove("active"));
-    btn.classList.add("active");
+let activeIndex = 0; // default Search
+const modeButtons = Array.from(document.querySelectorAll('.mode-btn'));
+const queryInput = document.getElementById('query');
+const sendBtn = document.getElementById('send');
+const statusEl = document.getElementById('status');
+const timerEl = document.getElementById('timer');
+const responseEl = document.getElementById('response');
+
+function setActive(index){
+  activeIndex = index;
+  modeButtons.forEach((b,i)=>{
+    b.classList.toggle('active', i === index);
+    b.setAttribute('aria-pressed', i === index ? 'true' : 'false');
   });
+  // update status / visuals
+  statusEl.textContent = 'Idle';
+  timerEl.textContent = '';
+  responseEl.textContent = '';
+  // focus input
+  queryInput.focus();
+}
+
+// attach click handlers to segmented buttons
+modeButtons.forEach((btn, i)=>{
+  btn.addEventListener('click', ()=> setActive(i));
 });
 
-// Timer
-function startTimer(statusEl) {
-  let time = 0;
-  statusEl.textContent = "Processing...";
-  const interval = setInterval(() => {
-    time++;
-    statusEl.textContent = `Processing... ${time}s`;
-  }, 1000);
-  return interval;
+// timer utilities
+let timerInterval = null;
+function startTimer(){
+  let s = 0;
+  timerEl.textContent = `0s`;
+  timerInterval = setInterval(()=>{
+    s++; timerEl.textContent = `${s}s`;
+  },1000);
+  return ()=>{
+    clearInterval(timerInterval);
+  };
 }
 
-// API Calls
-async function querySearch(data) {
-  const response = await fetch(
-    "https://cloud.flowiseai.com/api/v1/prediction/f495e9f3-cd33-428d-93ac-9c7914b5c052",
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data)
-    }
-  );
-  return response.json();
+// typewriter effect
+async function typewriterWrite(targetEl, text, msPerChar = 18){
+  targetEl.textContent = '';
+  for(let i=0;i<text.length;i++){
+    targetEl.textContent += text[i];
+    await new Promise(r => setTimeout(r, msPerChar));
+  }
 }
 
-async function queryDeep(data) {
-  const response = await fetch(
-    "https://cloud.flowiseai.com/api/v1/prediction/2fd060a7-3ea7-482c-8eea-4f1a1168cef1",
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data)
-    }
-  );
-  return response.json();
+// fetch helper
+async function callAPI(url, payload){
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  if(!res.ok){
+    const t = await res.text();
+    throw new Error(`HTTP ${res.status} - ${t}`);
+  }
+  return res.json();
 }
 
-async function queryChat(data) {
-  const response = await fetch(
-    "https://cloud.flowiseai.com/api/v1/prediction/ef218325-4fa0-4bef-9f1d-11f7278341f3",
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data)
-    }
-  );
-  return response.json();
-}
+// send action
+sendBtn.addEventListener('click', async ()=>{
+  const q = queryInput.value.trim();
+  if(!q) { queryInput.focus(); return; }
 
-// Research Run
-document.getElementById("researchBtn").addEventListener("click", async () => {
-  const query = document.getElementById("researchInput").value;
-  const status = document.getElementById("researchStatus");
-  const resultBox = document.getElementById("researchResult");
-  const isDeep = document.getElementById("modeToggle").checked;
+  // UI prepare
+  responseEl.textContent = '';
+  statusEl.textContent = 'Searching...';
+  const stopTimer = startTimer();
+  sendBtn.disabled = true;
+  queryInput.disabled = true;
 
-  const interval = startTimer(status);
-  const res = isDeep ? await queryDeep({ question: query }) : await querySearch({ question: query });
-  clearInterval(interval);
+  try{
+    const mode = modes[activeIndex];
+    // payload uses "question" key (consistent with earlier examples)
+    const start = performance.now();
+    const result = await callAPI(mode.url, { question: q });
+    const duration = ((performance.now() - start)/1000).toFixed(2);
 
-  status.textContent = "Done ✅";
-  resultBox.textContent = res.text || JSON.stringify(res);
+    // display with typewriter effect (if text exists)
+    const text = result && result.text ? result.text : JSON.stringify(result, null, 2);
+    await typewriterWrite(responseEl, text, 14); // slightly fast, readable
+
+    statusEl.textContent = `✅ Responded in ${duration}s`;
+  }catch(err){
+    responseEl.textContent = `Error: ${err.message}`;
+    statusEl.textContent = '❌ Error';
+  }finally{
+    stopTimer();
+    sendBtn.disabled = false;
+    queryInput.disabled = false;
+  }
 });
 
-// Chat
-const chatWindow = document.getElementById("chatWindow");
-const chatInput = document.getElementById("chatInput");
-const chatBtn = document.getElementById("chatBtn");
-
-function addMessage(message, sender) {
-  const bubble = document.createElement("div");
-  bubble.className = `chat-bubble ${sender}`;
-  bubble.textContent = message;
-  chatWindow.appendChild(bubble);
-  chatWindow.scrollTop = chatWindow.scrollHeight;
-}
-
-chatBtn.addEventListener("click", async () => {
-  const msg = chatInput.value;
-  if (!msg) return;
-  addMessage(msg, "user");
-  chatInput.value = "";
-
-  const res = await queryChat({ question: msg });
-  addMessage(res.text || JSON.stringify(res), "ai");
+// keyboard: enter to send
+queryInput.addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter'){ sendBtn.click(); }
 });
+
+// initialize
+setActive(activeIndex);
