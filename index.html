@@ -1,53 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Liora AI Studio</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Liora AI Studio — Deep Search & Chat</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="app-container">
-    <!-- Header -->
-    <header>
-      <img src="https://image2url.com/images/1759051267245-53623030-e1d9-425c-bcde-259b0564ff18.png" alt="Liora Logo" class="logo">
-      <h1>Liora AI Studio</h1>
+  <div class="app">
+    <header class="top">
+      <img class="logo-img" src="https://image2url.com/images/1759051267245-53623030-e1d9-425c-bcde-259b0564ff18.png" alt="Liora Logo" />
+      <h1 class="brand">Liora <span>AI Studio</span></h1>
+
+      <nav class="mode-switch" role="tablist" aria-label="Modes">
+        <button class="mode-btn active" data-mode="search" aria-pressed="true">🔎 Search</button>
+        <button class="mode-btn" data-mode="deep" aria-pressed="false">🧠 Deep Search</button>
+        <button class="mode-btn" data-mode="chat" aria-pressed="false">💬 AI Chat</button>
+      </nav>
     </header>
 
-    <!-- Navigation -->
-    <nav class="menu">
-      <button class="menu-btn" data-section="search-deep">Search / Deep Search</button>
-      <button class="menu-btn" data-section="chat">AI Chat</button>
-    </nav>
-
-    <!-- Sections -->
-    <main>
-      <!-- Search + Deep Search (Toggle) -->
-      <section id="search-deep" class="active">
-        <h2>Research Assistant</h2>
-        <label class="toggle">
-          <input type="checkbox" id="modeToggle">
-          <span class="slider"></span>
-          <span class="labels" data-off="Search" data-on="Deep Search"></span>
-        </label>
-        <div class="input-group">
-          <input type="text" id="researchInput" placeholder="Enter your query...">
-          <button id="researchBtn">Run</button>
+    <main class="main">
+      <section class="panel">
+        <label for="query" class="sr">Enter your query</label>
+        <div class="input-row">
+          <input id="query" type="text" placeholder="Type your question here..." autocomplete="off" />
+          <button id="send" class="btn">Ask</button>
         </div>
-        <div id="researchStatus"></div>
-        <div id="researchResult" class="result-box"></div>
-      </section>
 
-      <!-- AI Chat -->
-      <section id="chat">
-        <h2>AI Chat</h2>
-        <div id="chatWindow" class="chat-window"></div>
-        <div class="chat-input">
-          <input type="text" id="chatInput" placeholder="Type your message...">
-          <button id="chatBtn">Send</button>
+        <div class="meta">
+          <div id="status" class="status">Idle</div>
+          <div id="timer" class="timer"></div>
         </div>
+
+        <div id="response" class="response" aria-live="polite"></div>
       </section>
     </main>
+
+    <footer class="footer">
+      <small>© Liora Systems — Neon Blue Edition</small>
+    </footer>
   </div>
 
   <script src="script.js"></script>
